@@ -1,0 +1,157 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in library 'conveter_core'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--lib",
+          "--package=conveter_core"
+        ],
+        "filter": {
+          "name": "conveter_core",
+          "kind": "lib"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug executable 'conveter_core'",
+      "cargo": {
+        "args": [
+          "build",
+          "--bin=conveter_core",
+          "--package=conveter_core"
+        ],
+        "filter": {
+          "name": "conveter_core",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in executable 'conveter_core'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--bin=conveter_core",
+          "--package=conveter_core"
+        ],
+        "filter": {
+          "name": "conveter_core",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug integration test 'ply_importer_test'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--test=ply_importer_test",
+          "--package=conveter_core"
+        ],
+        "filter": {
+          "name": "ply_importer_test",
+          "kind": "test"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug executable 'cli'",
+      "cargo": {
+        "args": [
+          "build",
+          "--bin=cli",
+          "--package=cli"
+        ],
+        "filter": {
+          "name": "cli",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in executable 'cli'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--bin=cli",
+          "--package=cli"
+        ],
+        "filter": {
+          "name": "cli",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug executable 'wasm'",
+      "cargo": {
+        "args": [
+          "build",
+          "--bin=wasm",
+          "--package=wasm"
+        ],
+        "filter": {
+          "name": "wasm",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in executable 'wasm'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--bin=wasm",
+          "--package=wasm"
+        ],
+        "filter": {
+          "name": "wasm",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    }
+  ]
+}

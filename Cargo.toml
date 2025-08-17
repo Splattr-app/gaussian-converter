@@ -1,0 +1,12 @@
+[workspace]
+members = [
+  "conveter_core",
+  "cli",
+  "wasm",
+]
+resolver = "2"
+
+# Shared deps here
+[workspace.dependencies]
+thiserror = "2.0.15"
+ply-rs = "0.1.3"
