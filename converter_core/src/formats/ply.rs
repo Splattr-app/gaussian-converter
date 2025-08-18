@@ -51,7 +51,7 @@ impl Importer for PlyImporter {
         position: [
           property_to_f32(&vert["x"]),
           property_to_f32(&vert["y"]),
-          property_to_f32(&vert["z"]),
+          -property_to_f32(&vert["z"]),
         ],
         normal: [
           property_to_f32(&vert["nx"]),
