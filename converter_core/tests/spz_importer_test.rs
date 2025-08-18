@@ -6,7 +6,7 @@ use converter_core::formats::spz::SpzImporter;
 
 #[test]
 fn spz_importer_success() {
-  let file = File::open("./hornedlizard.spz").unwrap();
+  let file = File::open("./test_data/hornedlizard.spz").unwrap();
   let mut reader = BufReader::new(file);
 
   let result = SpzImporter::import(&mut reader);

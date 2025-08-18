@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gaussian Splat Converter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="https://splattr.app/favicon.ico" type="image/x-icon">
+</head>
+
+<body>
+  <main class="container">
+    <header class="header">
+      <h1 class="title">Gaussian Splat Converter</h1>
+      <p class="subtitle">A high-performance, open-source converter in Rust, running in your browser via WebAssembly.
+      </p>
+    </header>
+
+    <section class="converter-card">
+      <div class="file-upload-area">
+        <input type="file" id="file-input" class="file-input" hidden />
+        <label for="file-input" id="file-label" class="file-label">
+          <svg class="upload-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z" />
+          </svg>
+          <span id="file-name">Click to browse or drag & drop a file</span>
+        </label>
+      </div>
+
+      <div class="format-selectors">
+        <div class="select-group">
+          <label for="source-format">Convert from:</label>
+          <select id="source-format">
+            <option value="ply">PLY</option>
+            <option value="spz">SPZ</option>
+            <option value="csv">CSV</option>
+            <option value="splat">SPLAT</option>
+          </select>
+        </div>
+
+        <div class="select-group">
+          <label for="target-format">to:</label>
+          <select id="target-format">
+            <option value="splat">SPLAT</option>
+            <option value="ply">PLY</option>
+            <option value="spz">SPZ</option>
+            <option value="csv">CSV</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="button-container">
+        <button id="convert-btn" class="convert-button">Convert</button>
+        <div class="loader" id="loader"></div>
+      </div>
+
+
+      <div id="status" class="status-message"></div>
+      <div id="download-link-container" class="download-container"></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>
+      An open-source tool by <a href="https://splattr.app" target="_blank" rel="noopener noreferrer">Splattr</a> •
+      <a href="https://github.com/Splattr-app/gaussian-converter" target="_blank" rel="noopener noreferrer">Source
+        Code</a> •
+      The Cloud Platform for 3D Gaussian Splatting
+    </p>
+  </footer>
+
+  <script type="module" src="index.js" defer></script>
+</body>
+
+</html>
