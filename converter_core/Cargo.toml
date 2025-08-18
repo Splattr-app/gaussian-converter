@@ -1,0 +1,9 @@
+[package]
+name = "converter_core"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+ply-rs = "0.1.3"
+spz_rs = "0.1.0"
+thiserror = { workspace = true}

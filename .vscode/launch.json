@@ -4,19 +4,20 @@
   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
   "configurations": [
+    
     {
       "type": "lldb",
       "request": "launch",
-      "name": "Debug unit tests in library 'conveter_core'",
+      "name": "Debug unit tests in library 'converter_core'",
       "cargo": {
         "args": [
           "test",
           "--no-run",
           "--lib",
-          "--package=conveter_core"
+          "--package=converter_core"
         ],
         "filter": {
-          "name": "conveter_core",
+          "name": "converter_core",
           "kind": "lib"
         }
       },
@@ -26,15 +27,15 @@
     {
       "type": "lldb",
       "request": "launch",
-      "name": "Debug executable 'conveter_core'",
+      "name": "Debug executable 'converter_core'",
       "cargo": {
         "args": [
           "build",
-          "--bin=conveter_core",
-          "--package=conveter_core"
+          "--bin=converter_core",
+          "--package=converter_core"
         ],
         "filter": {
-          "name": "conveter_core",
+          "name": "converter_core",
           "kind": "bin"
         }
       },
@@ -44,16 +45,16 @@
     {
       "type": "lldb",
       "request": "launch",
-      "name": "Debug unit tests in executable 'conveter_core'",
+      "name": "Debug unit tests in executable 'converter_core'",
       "cargo": {
         "args": [
           "test",
           "--no-run",
-          "--bin=conveter_core",
-          "--package=conveter_core"
+          "--bin=converter_core",
+          "--package=converter_core"
         ],
         "filter": {
-          "name": "conveter_core",
+          "name": "converter_core",
           "kind": "bin"
         }
       },
@@ -69,10 +70,29 @@
           "test",
           "--no-run",
           "--test=ply_importer_test",
-          "--package=conveter_core"
+          "--package=converter_core"
         ],
         "filter": {
           "name": "ply_importer_test",
+          "kind": "test"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug integration test 'spz_importer_test'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--test=spz_importer_test",
+          "--package=converter_core"
+        ],
+        "filter": {
+          "name": "spz_importer_test",
           "kind": "test"
         }
       },
