@@ -56,7 +56,7 @@ impl Importer for PlyImporter {
         normal: [
           property_to_f32(&vert["nx"]),
           property_to_f32(&vert["ny"]),
-          property_to_f32(&vert["nz"]),
+          -property_to_f32(&vert["nz"]),
         ],
         spherical_harmonics_dc: [
           property_to_f32(&vert["f_dc_0"]),
@@ -71,10 +71,10 @@ impl Importer for PlyImporter {
           property_to_f32(&vert["scale_2"]),
         ],
         rotation: [
-          property_to_f32(&vert["rot_0"]),
-          property_to_f32(&vert["rot_1"]),
-          property_to_f32(&vert["rot_2"]),
-          property_to_f32(&vert["rot_3"]),
+          property_to_f32(&vert["rot_0"]), // w
+          property_to_f32(&vert["rot_1"]), // x
+          property_to_f32(&vert["rot_2"]), // y
+          property_to_f32(&vert["rot_3"]), // z
         ],
       };
       splats.push(splat);

@@ -26,7 +26,11 @@ impl Importer for SpzImporter {
       let unpacked_gaussian = packed_gaussians.unpack(i);
 
       let splat = GaussianSplat {
-        position: unpacked_gaussian.position,
+        position: [
+          unpacked_gaussian.position[0],
+          unpacked_gaussian.position[1],
+          unpacked_gaussian.position[2],
+        ],
         normal: [0f32, 0f32, 0f32],
         spherical_harmonics_dc: unpacked_gaussian.color,
         spherical_harmonics_rest: unpack_sh_rest(&unpacked_gaussian),
@@ -122,10 +126,9 @@ impl Exporter for SpzV2Exporter {
 
     const COLOR_SCALE: f32 = 0.15;
 
-    // --- Pack data ---
     for splat in &scene.splats {
-      // Positions (flip Y only, per your working pipeline)
-      let coords = [splat.position[0], -splat.position[1], splat.position[2]];
+      // Positions
+      let coords = [splat.position[0], splat.position[1], splat.position[2]];
       for &coord in &coords {
         // fixed24 = round(coord * scale_pos), then store little-endian 3 bytes
         let fixed = (coord * scale_pos).round() as i32;
