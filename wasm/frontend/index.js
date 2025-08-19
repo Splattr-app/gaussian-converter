@@ -72,7 +72,7 @@ convertBtn.addEventListener('click', async () => {
     const srcFmt = sourceFormat.value;
     const tgtFmt = targetFormat.value;
 
-    status.textContent = `Converting from ${srcFmt.toUpperCase()} to ${tgtFmt.toUpperCase()}...`;
+    status.textContent = `Converting from ${srcFmt.toUpperCase()} to ${tgtFmt.replaceAll("_", " ").toUpperCase()}...`;
 
     // Post data to the worker to process.
     // The ArrayBuffer is transferred, not copied, for performance.
@@ -98,8 +98,15 @@ worker.onmessage = (e) => {
   if (msgStatus === 'success') {
     const blob = new Blob([data], { type: 'application/octet-stream' });
     const url = URL.createObjectURL(blob);
+    const formatExtensions = {
+      "splat": "splat",
+      "ascii_ply": "ply",
+      "binary_ply": "ply",
+      "spz_v2": "spz",
+      "csv": "csv"
+    }
 
-    const newFileName = selectedFile.name.split('.').slice(0, -1).join('.') + `.${targetFormat.value}`;
+    const newFileName = selectedFile.name.split('.').slice(0, -1).join('.') + `.${formatExtensions[targetFormat.value]}`;
 
     downloadContainer.innerHTML = `<a href="${url}" download="${newFileName}">Download ${newFileName}</a>`;
     status.textContent = 'Conversion successful!';

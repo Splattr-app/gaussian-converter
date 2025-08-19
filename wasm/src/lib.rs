@@ -4,7 +4,7 @@ use converter_core::{
   ConversionError, Exporter, Importer, Scene,
   formats::{
     csv::{CsvExporter, CsvImporter},
-    ply::{PlyBinaryExporter, PlyImporter},
+    ply::{PlyASCIIExporter, PlyBinaryExporter, PlyImporter},
     splat::{SplatExporter, SplatImporter},
     spz::{SpzImporter, SpzV2Exporter},
   },
@@ -44,8 +44,9 @@ fn run_conversion(
   let mut writer = Vec::new();
 
   match target_format {
-    "ply" => PlyBinaryExporter::export(&scene, &mut writer)?,
-    "spz" => SpzV2Exporter::export(&scene, &mut writer)?,
+    "ascii_ply" => PlyASCIIExporter::export(&scene, &mut writer)?,
+    "binary_ply" => PlyBinaryExporter::export(&scene, &mut writer)?,
+    "spz_v2" => SpzV2Exporter::export(&scene, &mut writer)?,
     "csv" => CsvExporter::export(&scene, &mut writer)?,
     "splat" => SplatExporter::export(&scene, &mut writer)?,
     _ => return Err(ConversionError::UnsupportedFormat),
