@@ -1,7 +1,7 @@
 [workspace]
 members = [
   "converter_core",
-  "cli",
+  "gs-flux",
   "wasm",
 ]
 resolver = "2"

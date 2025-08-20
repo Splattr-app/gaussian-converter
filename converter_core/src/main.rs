@@ -58,7 +58,7 @@ fn convert_ply_to_spz() -> Result<(), Box<dyn std::error::Error>> {
 fn convert_ply_to_splat() -> Result<(), Box<dyn std::error::Error>> {
   const FILENAME: &str = "ball_refined";
 
-  let file = File::open(format!("./{}.ply", FILENAME))?;
+  let file = File::open(format!("./test_data/{}.ply", FILENAME))?;
   let mut reader = BufReader::new(file);
 
   let scene = PlyImporter::import(&mut reader)?;
@@ -69,6 +69,25 @@ fn convert_ply_to_splat() -> Result<(), Box<dyn std::error::Error>> {
   let _ = SplatExporter::export(&scene, &mut writer);
 
   println!("Converted scene {}.splat", FILENAME);
+
+  Ok(())
+}
+
+#[test]
+fn convert_ply_to_ply() -> Result<(), Box<dyn std::error::Error>> {
+  const FILENAME: &str = "ball_refined";
+
+  let file = File::open(format!("./test_data/{}.ply", FILENAME))?;
+  let mut reader = BufReader::new(file);
+
+  let scene = PlyImporter::import(&mut reader)?;
+
+  let file: File = File::create(format!("./test_data/{}_converted.ply", FILENAME))?;
+  let mut writer = BufWriter::new(file);
+
+  let _ = PlyBinaryExporter::export(&scene, &mut writer);
+
+  println!("Converted scene {}.ply", FILENAME);
 
   Ok(())
 }
