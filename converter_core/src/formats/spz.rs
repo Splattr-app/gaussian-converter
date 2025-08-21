@@ -1,3 +1,5 @@
+use std::f32::INFINITY;
+
 use crate::{ConversionError, Exporter, GaussianSplat, Importer, Scene};
 use spz_rs::{UnpackedGaussian, load_packed_gaussians_from_spz_buffer};
 
@@ -25,6 +27,15 @@ impl Importer for SpzImporter {
     for i in 0..packed_gaussians.num_points {
       let unpacked_gaussian = packed_gaussians.unpack(i);
 
+      // Handle `infinity`
+      let opacity = {
+        if unpacked_gaussian.alpha == INFINITY {
+          1.0
+        } else {
+          0.0
+        }
+      };
+
       let splat = GaussianSplat {
         position: [
           unpacked_gaussian.position[0],
@@ -34,7 +45,7 @@ impl Importer for SpzImporter {
         normal: [0f32, 0f32, 0f32],
         spherical_harmonics_dc: unpacked_gaussian.color,
         spherical_harmonics_rest: unpack_sh_rest(&unpacked_gaussian),
-        opacity: unpacked_gaussian.alpha,
+        opacity: opacity,
         scale: unpacked_gaussian.scale,
         rotation: unpacked_gaussian.rotation,
       };
