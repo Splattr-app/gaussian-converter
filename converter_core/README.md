@@ -9,7 +9,7 @@ This intermediate representation acts as a "universal language" for Gaussian spl
 
 ```mermaid
 flowchart TD
-    subgraph "Input Formats (The Top Funnel)"
+    subgraph "Input Formats"
         A1[file.ply]
         A2[file.spz]
         A3[other_format.abc]
@@ -19,7 +19,7 @@ flowchart TD
         B(Universal `Scene` Representation)
     end
 
-    subgraph "Output Formats (The Bottom Funnel)"
+    subgraph "Output Formats"
         C1[output.ply]
         C2[output.spz]
         C3[other_output.xyz]
