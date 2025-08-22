@@ -9,4 +9,7 @@
   "[css]": {
     "editor.defaultFormatter": "vscode.css-language-features"
   },
+  "[vue]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
 }

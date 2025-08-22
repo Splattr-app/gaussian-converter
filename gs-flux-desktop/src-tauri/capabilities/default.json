@@ -1,0 +1,27 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "enables the default permissions",
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "core:default",
+    "dialog:default",
+    "fs:default",
+    "fs:allow-app-read-recursive",
+    "fs:allow-app-write-recursive",
+    {
+      "identifier": "fs:scope-home",
+      "allow": [{ "path": "$HOME/**" }]
+    },
+    {
+      "identifier": "fs:read-all",
+      "allow": [{ "path": "$HOME/**" }]
+    },
+    {
+      "identifier": "fs:write-all",
+      "allow": [{ "path": "$HOME/**" }]
+    }
+  ]
+}

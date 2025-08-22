@@ -3,6 +3,7 @@ members = [
   "converter_core",
   "gs-flux",
   "wasm",
+  "gs-flux-desktop/src-tauri"
 ]
 resolver = "2"
 
