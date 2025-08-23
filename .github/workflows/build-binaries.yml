@@ -67,9 +67,9 @@ jobs:
         working-directory: gs-flux-desktop
         run: pnpm install --frozen-lockfile
 
-      - name: Build gs-flux-desktop (no bundling)
+      - name: Build gs-flux-desktop (bundled installer)
         working-directory: gs-flux-desktop
-        run: pnpm tauri build --bundles none
+        run: pnpm build
 
       - name: Upload gs-flux-desktop binary
         uses: actions/upload-artifact@v4
