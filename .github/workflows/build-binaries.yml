@@ -76,7 +76,7 @@ jobs:
         with:
           name: gs-flux-desktop-${{ runner.os }}-x86_64
           path: |
-            gs-flux-desktop/src-tauri/target/release/gs-flux-desktop*
+            target/release/gs-flux-desktop*
           if-no-files-found: error
 
       - name: Upload packaged bundles (if any)
@@ -84,7 +84,7 @@ jobs:
         with:
           name: gs-flux-desktop-bundles-${{ runner.os }}
           path: |
-            gs-flux-desktop/src-tauri/target/release/bundle/**
+            target/release/bundle/**
           if-no-files-found: ignore
 
 
