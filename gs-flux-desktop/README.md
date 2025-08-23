@@ -29,3 +29,7 @@ Build the application for production:
 # pnpm
 pnpm build
 ```
+
+## Note
+
+If on linux you are getting an error like `Failed to create GBM buffer of size 800x600: Invalid argument` you can try setting `WEBKIT_DISABLE_DMABUF_RENDERER` to `1` in your environment.

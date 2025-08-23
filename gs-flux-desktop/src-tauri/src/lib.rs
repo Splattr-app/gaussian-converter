@@ -7,6 +7,7 @@ use converter_core::{
   },
   Exporter, Importer,
 };
+use dirs_next::cache_dir;
 use serde::Serialize;
 use std::env;
 use std::fs::{self, File};
@@ -26,7 +27,7 @@ async fn convert_to_temp_file(
   source_format: &str,
   target_format: &str,
 ) -> Result<ConversionResult, String> {
-  let temp_dir = env::temp_dir();
+  let temp_dir = cache_dir().unwrap_or_else(env::temp_dir);
   let unique_id = Uuid::new_v4().to_string();
 
   let temp_file_name = format!(

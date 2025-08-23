@@ -27,3 +27,4 @@ converter_core = { path = "../../converter_core" }
 tauri-plugin-dialog = "2"
 tauri-plugin-fs = "2"
 uuid = { version = "1.18.0", features = ["v4"] }
+dirs-next = "2.0.0"
