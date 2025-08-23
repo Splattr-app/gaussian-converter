@@ -86,7 +86,11 @@ jobs:
         with:
           name: gs-flux-desktop-bundles-${{ runner.os }}
           path: |
-            target/release/bundle/**
+            target/release/bundle/appimage/*.AppImage
+            target/release/bundle/deb/*.deb
+            target/release/bundle/rpm/*.rpm
+            target/release/bundle/msi/*.msi
+            target/release/bundle/nsis/*.exe
           if-no-files-found: ignore
 
 
@@ -104,6 +108,14 @@ jobs:
           pattern: "*"
           path: dist
           merge-multiple: true
+
+      - name: Normalize asset names (add OS suffix to raw binaries)
+        run: |
+          set -e
+          if [ -f dist/gs-flux ]; then mv dist/gs-flux dist/gs-flux-linux-x86_64; fi
+          if [ -f dist/gs-flux.exe ]; then mv dist/gs-flux.exe dist/gs-flux-windows-x86_64.exe; fi
+          if [ -f dist/gs-flux-desktop ]; then mv dist/gs-flux-desktop dist/gs-flux-desktop-linux-x86_64; fi
+          if [ -f dist/gs-flux-desktop.exe ]; then mv dist/gs-flux-desktop.exe dist/gs-flux-desktop-windows-x86_64.exe; fi
 
       - name: Create GitHub Release and upload assets
         uses: softprops/action-gh-release@v2
