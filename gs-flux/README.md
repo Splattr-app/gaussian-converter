@@ -45,18 +45,6 @@ You can always see all available options by running:
 gs-flux --help
 ```
 
-## Supported Formats
-
-The underlying conversion logic is powered by the `converter_core` library.
-
-| Format | Extension | Read Support | Write Support | Notes |
-| :--- | :---: | :---: | :---: | :--- |
-| **PLY** | `.ply` | ✅ | ✅ | Supports `binary` (default) and `ascii` encoding on write. |
-| **SPLAT** | `.splat` | ✅ | ✅ | Standard format used by many viewers. |
-| **SPZ** | `.spz` | ✅ | ✅ | A compressed format using ZIP. Writes as v2. |
-| **CSV** | `.csv` | ✅ | ✅ | Useful for debugging or data analysis. |
-
-
 ## Building from Source
 
 If you want to build `gs-flux` from the source code:

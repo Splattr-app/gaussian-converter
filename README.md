@@ -22,6 +22,7 @@ This is a monorepo containing several related packages. Here's what you'll find 
 | :--- | :--- |
 | **[`./converter_core`](./converter_core)** | The heart of the toolkit. A Rust library that provides the core logic for all import and export operations. If you want to understand the conversion architecture, start here. |
 | **[`./gs-flux`](./gs-flux)** | A simple command-line interface (CLI) built on top of `converter-core`.|
+| **[`./gs-flux-desktop`](./gs-flux-desktop)** | A desktop application built on top of `converter-core`. Built with Tauri. |
 | **[`./wasm`](./wasm)** | A WebAssembly build of `converter-core`, complete with a simple frontend. This demonstrates how to run the converter entirely in the browser. |
 
 ## 🚀 Quick Start
@@ -44,6 +45,10 @@ For full installation and usage instructions, see the **[gs-flux README](./gs-fl
 To run the converter directly in your browser, you can build and serve the WebAssembly package.
 
 For detailed instructions, see the **[wasm README](./wasm/README.md)**.
+
+### Using the Desktop app
+
+For detailed instructions, see the **[gs-flux-desktop README](./gs-flux-desktop/README.md)**.
 
 ## 🤝 Contributing
 
