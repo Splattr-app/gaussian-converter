@@ -51,12 +51,12 @@ impl Importer for PlyImporter {
         position: [
           property_to_f32(&vert["x"]),
           property_to_f32(&vert["y"]),
-          -property_to_f32(&vert["z"]),
+          property_to_f32(&vert["z"]),
         ],
         normal: [
           property_to_f32(&vert["nx"]),
           property_to_f32(&vert["ny"]),
-          -property_to_f32(&vert["nz"]),
+          property_to_f32(&vert["nz"]),
         ],
         spherical_harmonics_dc: [
           property_to_f32(&vert["f_dc_0"]),
