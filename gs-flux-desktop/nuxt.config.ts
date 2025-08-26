@@ -11,7 +11,6 @@ export default defineNuxtConfig({
     "@nuxt/icon",
     "@formkit/auto-animate"
   ],
-
   ssr: false,
   vite: {
     plugins: [tailwindcss()],
