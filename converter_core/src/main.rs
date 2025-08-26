@@ -1,7 +1,5 @@
 #[cfg(test)]
-use std::io::BufWriter;
-#[cfg(test)]
-use std::{fs::File, io::BufReader};
+use std::{fs::File, io::BufReader, io::BufWriter};
 
 #[cfg(test)]
 use converter_core::formats::{

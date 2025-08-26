@@ -1,4 +1,4 @@
-# SG Flux Desktop
+# GS Flux Desktop
 
 A desktop application for converting between different Gaussian Splatting formats.
 This is built with [Tauri](https://tauri.app/) and [Nuxt](https://nuxt.com/).

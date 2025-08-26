@@ -1,6 +1,41 @@
 # Gaussian splatting converter
 This is a library to perform gaussian splatting conversions, written in Rust for maximum performance and safety, it serves as the core conversion engine for the [Splattr](https://splattr.app) ecosystem.
 
+## How to use
+You can use the library by adding the following to your Cargo.toml
+
+```toml
+[dependencies]
+converter_core = { git = "https://github.com/Splattr-app/gaussian-converter.git", package = "converter_core", rev = "<commit hash>" }
+```
+
+You can then start using it. Check `src/main.rs on examples`
+```rust
+// PLY to SPZ example
+use converter_core::formats::{
+  ply::{PlyImporter},
+  spz::{SpzV2Exporter},
+};
+use converter_core::{Exporter, Importer};
+use std::{fs::File, io::BufReader, io::BufWriter};
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+  const FILENAME: &str = "my_file";
+
+  let file = File::open(format!("./{}.ply", FILENAME))?;
+  let mut reader = BufReader::new(file);
+
+  let scene = PlyImporter::import(&mut reader)?;
+
+  let file: File = File::create(format!("./{}_converted.spz", FILENAME))?;
+  let mut writer = BufWriter::new(file);
+
+  let _ = SpzV2Exporter::export(&scene, &mut writer);
+
+  println!("Converted scene {}.spz", FILENAME);
+}
+```
+
 ## How It Works
 
 This library is designed around a powerful and scalable **hourglass architecture**. Instead of writing direct, one-to-one converters for every possible format pair (e.g., PLY-to-SPZ, SPZ-to-PLY, etc.), all conversions pass through a common, in-memory representation of the scene.
