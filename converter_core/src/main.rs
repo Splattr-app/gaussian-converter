@@ -4,7 +4,7 @@ use std::{fs::File, io::BufReader, io::BufWriter};
 #[cfg(test)]
 use converter_core::formats::{
   csv::{CsvExporter, CsvImporter},
-  ply::{PlyBinaryExporter, PlyImporter},
+  ply::{PlyBinaryExporter, PlyCompressedExporter, PlyImporter},
   splat::{SplatExporter, SplatImporter},
   spz::{SpzImporter, SpzV2Exporter},
 };
@@ -122,6 +122,25 @@ fn convert_splat_to_csv() -> Result<(), Box<dyn std::error::Error>> {
   let mut writer = BufWriter::new(file);
 
   let _ = CsvExporter::export(&scene, &mut writer);
+
+  println!("Converted scene {}.splat", FILENAME);
+
+  Ok(())
+}
+
+#[test]
+fn convert_splat_to_compressed_ply() -> Result<(), Box<dyn std::error::Error>> {
+  const FILENAME: &str = "baby_yoda";
+
+  let file = File::open(format!("./test_data/{}.splat", FILENAME))?;
+  let mut reader = BufReader::new(file);
+
+  let scene = SplatImporter::import(&mut reader)?;
+
+  let file: File = File::create(format!("./test_data/{}_converted.compressed.ply", FILENAME))?;
+  let mut writer = BufWriter::new(file);
+
+  let _ = PlyCompressedExporter::export(&scene, &mut writer);
 
   println!("Converted scene {}.splat", FILENAME);
 
