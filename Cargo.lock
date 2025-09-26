@@ -757,7 +757,7 @@ checksum = "6245d59a3e82a7fc217c5828a6692dbc6dfb63a0c8c90495621f7b9d79704a0e"
 
 [[package]]
 name = "converter_core"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "byteorder",
  "csv",
@@ -1728,7 +1728,7 @@ dependencies = [
 
 [[package]]
 name = "gs-flux"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "clap",
  "converter_core",
@@ -1737,7 +1737,7 @@ dependencies = [
 
 [[package]]
 name = "gs-flux-desktop"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "converter_core",
  "dirs-next",

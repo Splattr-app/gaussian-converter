@@ -103,6 +103,8 @@ The underlying conversion logic is powered by the `converter_core` library.
 | Format | Extension | Read Support | Write Support | Notes |
 | :--- | :---: | :---: | :---: | :--- |
 | **PLY** | `.ply` | ✅ | ✅ | Supports `binary` (default) and `ascii` encoding on write. |
-| **SPLAT** | `.splat` | ✅ | ✅ | Standard format used by many viewers. |
-| **SPZ** | `.spz` | ✅ | ✅ | A compressed format using ZIP. Writes as v2. |
+| **Compressed PLY** | `.ply` | ❌ | ❌ | Support is on the way. |
+| **SOG** | `.ply` | ❌ | ❌ | Support is on the way. |
+| **SPLAT** | `.splat` | ✅ | ✅ | / |
+| **SPZ** | `.spz` | ✅ | ✅ | Writes as SPZ v2.|
 | **CSV** | `.csv` | ✅ | ✅ | Useful for debugging or data analysis. |

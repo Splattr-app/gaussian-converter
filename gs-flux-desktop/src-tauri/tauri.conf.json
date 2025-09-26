@@ -1,8 +1,8 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "GS Flux Desktop",
-  "version": "0.1.0",
-  "identifier": "com.splatt.gs-flux-desktop",
+  "version": "0.1.2",
+  "identifier": "com.splattr.gs-flux-desktop",
   "build": {
     "frontendDist": "../.output/public",
     "devUrl": "http://localhost:1420",

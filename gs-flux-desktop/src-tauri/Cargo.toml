@@ -1,6 +1,6 @@
 [package]
 name = "gs-flux-desktop"
-version = "0.1.0"
+version = "0.1.2"
 description = "GUI for converting gaussian splatting files to and from other formats"
 authors = ["leo", "splattr"]
 license = ""
