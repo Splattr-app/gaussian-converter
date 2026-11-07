@@ -3,7 +3,7 @@ use converter_core::{
   ConversionError, Exporter, Importer, Scene,
   formats::{
     csv::{CsvExporter, CsvImporter},
-    ply::{PlyASCIIExporter, PlyBinaryExporter, PlyImporter},
+    ply::{PlyASCIIExporter, PlyBinaryExporter, PlyCompressedExporter, PlyImporter},
     splat::{SplatExporter, SplatImporter},
     spz::{SpzImporter, SpzV2Exporter},
   },
@@ -30,9 +30,9 @@ struct Params {
   #[arg(value_parser = validate_output_path)]
   output_file: String,
 
-  /// Output encoding (Valid only for .ply)
-  #[arg(long, value_parser = ["ascii", "binary"])]
-  encoding: Option<String>,
+  /// Output PLY variant (Valid only for .ply)
+  #[arg(long, value_parser = ["ascii", "binary", "compressed"])]
+  variant: Option<String>,
   //
   // Output version (no need to implement yet, just something for the future.)
   // #[arg(long)]
@@ -70,14 +70,14 @@ fn main() {
   let conversion_thread = thread::spawn({
     let source_file = params.source_file.clone();
     let output_file = params.output_file.clone();
-    let encoding = params.encoding.clone();
+    let variant = params.variant.clone();
     move || {
       convert(
         &source_file,
         &input_ext,
         &output_file,
         &output_ext,
-        encoding.as_deref(),
+        variant.as_deref(),
       )
     }
   });
@@ -155,7 +155,7 @@ fn convert(
   input_file_type: &str,
   output_file_path: &str,
   output_file_type: &str,
-  encoding: Option<&str>,
+  variant: Option<&str>,
   // version: Option<u32>,
 ) -> Result<(), ConversionError> {
   let file = File::open(input_file_path)?;
@@ -173,13 +173,14 @@ fn convert(
   let mut writer = BufWriter::new(file);
 
   match output_file_type {
-    "ply" => match encoding.unwrap_or("binary".into()) {
+    "ply" => match variant.unwrap_or("binary".into()) {
       "ascii" => PlyASCIIExporter::export(&scene, &mut writer)?,
       "binary" => PlyBinaryExporter::export(&scene, &mut writer)?,
+      "compressed" => PlyCompressedExporter::export(&scene, &mut writer)?,
       other => {
         return Err(ConversionError::ParseError {
           format: "PLY".to_string(),
-          message: format!("Unsupported PLY encoding: {}", other),
+          message: format!("Unsupported PLY variant: {}", other),
         });
       }
     },

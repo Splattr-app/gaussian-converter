@@ -30,12 +30,19 @@ gs-flux input.spz output.ply
 
 ### Advanced Options
 
-#### PLY Encoding
+#### PLY Variant
 
-By default, `.ply` files are written with binary encoding for efficiency. You can specify ASCII encoding using the `--encoding` flag. This option is **only valid for `.ply` output files**.
+By default, `.ply` files are written in the `binary` variant. Use the `--variant` flag to choose another one:
+
+- `binary` (default): standard binary PLY.
+- `ascii`: human-readable text PLY.
+- `compressed`: PlayCanvas-style compressed PLY (chunked and quantized, much smaller). Compressed files are detected automatically when reading.
+
+This option is **only valid for `.ply` output files**.
 
 ```bash
-gs-flux scene.splat scene.ply --encoding ascii
+gs-flux scene.splat scene.ply --variant ascii
+gs-flux scene.ply scene_small.ply --variant compressed
 ```
 
 #### Getting Help

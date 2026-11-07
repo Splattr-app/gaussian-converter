@@ -102,7 +102,7 @@ The underlying conversion logic is powered by the `converter_core` library.
 
 | Format | Extension | Read Support | Write Support | Notes |
 | :--- | :---: | :---: | :---: | :--- |
-| **PLY** | `.ply` | ✅ | ✅ | Supports `binary` (default) and `ascii` encoding on write. |
+| **PLY** | `.ply` | ✅ | ✅ | Supports `binary` (default), `ascii` and `compressed` variants on write; compressed files are detected automatically on read. |
 | **Compressed PLY** | `.ply` | ✅ | ✅ | [Playcanvas compressed ply format](https://blog.playcanvas.com/compressing-gaussian-splats/) |
 | **SOG** | `.ply` | ❌ | ❌ | Support is on the way. |
 | **SPLAT** | `.splat` | ✅ | ✅ | / |
