@@ -18,15 +18,10 @@ impl Exporter for PlyCompressedExporter {
     let num_chunks = (num_splats + CHUNK_SIZE - 1) / CHUNK_SIZE;
 
     // Detect whether we have SH data (same as before).
-    let has_sh_data = if let Some(first_splat) = scene.splats.first() {
-      !first_splat.spherical_harmonics_rest.is_empty()
-        && first_splat
-          .spherical_harmonics_rest
-          .iter()
-          .any(|&v| v.abs() > 1e-6)
-    } else {
-      false
-    };
+    let has_sh_data = scene
+      .splats
+      .iter()
+      .any(|s| s.spherical_harmonics_rest.iter().any(|&v| v.abs() > 1e-6));
 
     // --- Stage 1: Write PLY header that advertises chunk/vertex/sh layout ---
     // The header follows the compressed PLY spec in compressed_ply_docs.md. We use a
@@ -84,19 +79,15 @@ impl Exporter for PlyCompressedExporter {
     // We compute min/max for position, linear-scale, and DC color per chunk. Then we
     // quantize and bit-pack vertex attributes according to the bit allocation in the
     // spec (position/scale: x=11 MSB, y=10, z=11 LSB; rotation: 2+10+10+10; color: R:G:B:A).
-    for (i, chunk_splats_orig) in scene.splats.chunks(CHUNK_SIZE).enumerate() {
-      // padded_chunk for computing bounds (same as before)
-      let mut padded_chunk = chunk_splats_orig.to_vec();
-      if padded_chunk.len() < CHUNK_SIZE && !padded_chunk.is_empty() {
-        let last_splat = padded_chunk.last().unwrap().clone();
-        padded_chunk.resize(CHUNK_SIZE, last_splat);
-      }
+    let sorted = Self::morton_sorted(&scene.splats);
+    for (i, chunk_splats_orig) in sorted.chunks(CHUNK_SIZE).enumerate() {
+      let padded_chunk = chunk_splats_orig;
 
-      let (min_pos, max_pos) = Self::calculate_position_bounds(&padded_chunk);
+      let (min_pos, max_pos) = Self::calculate_position_bounds(padded_chunk);
       // calculate_scale_bounds should return LINEAR min/max (not log). Keep the
       // implementation you already switched to (exp of stored log values).
-      let (min_scl_lin, max_scl_lin) = Self::calculate_scale_bounds(&padded_chunk);
-      let (min_col, max_col) = Self::calculate_color_bounds(&padded_chunk);
+      let (min_scl_lin, max_scl_lin) = Self::calculate_scale_bounds(padded_chunk);
+      let (min_col, max_col) = Self::calculate_color_bounds(padded_chunk);
 
       // --- Stage 3a: Store per-chunk bounds into `chunk_f32` ---
       let base = i * 18;
@@ -106,13 +97,13 @@ impl Exporter for PlyCompressedExporter {
       chunk_f32[base + 3] = max_pos[0];
       chunk_f32[base + 4] = max_pos[1];
       chunk_f32[base + 5] = max_pos[2];
-      // Clamp linear scale bounds to avoid degenerate intervals.
-      chunk_f32[base + 6] = min_scl_lin[0].max(1e-8);
-      chunk_f32[base + 7] = min_scl_lin[1].max(1e-8);
-      chunk_f32[base + 8] = min_scl_lin[2].max(1e-8);
-      chunk_f32[base + 9] = max_scl_lin[0].max(1e-8);
-      chunk_f32[base + 10] = max_scl_lin[1].max(1e-8);
-      chunk_f32[base + 11] = max_scl_lin[2].max(1e-8);
+      // Scale bounds are in LOG space (as in the PlayCanvas format).
+      chunk_f32[base + 6] = min_scl_lin[0];
+      chunk_f32[base + 7] = min_scl_lin[1];
+      chunk_f32[base + 8] = min_scl_lin[2];
+      chunk_f32[base + 9] = max_scl_lin[0];
+      chunk_f32[base + 10] = max_scl_lin[1];
+      chunk_f32[base + 11] = max_scl_lin[2];
       chunk_f32[base + 12] = min_col[0];
       chunk_f32[base + 13] = min_col[1];
       chunk_f32[base + 14] = min_col[2];
@@ -167,8 +158,41 @@ impl Exporter for PlyCompressedExporter {
 
 // Helper implementation for PlyCompressedExporter
 impl PlyCompressedExporter {
+  /// Returns references to the splats ordered along a Morton curve for better chunk locality.
+  fn morton_sorted(splats: &[GaussianSplat]) -> Vec<&GaussianSplat> {
+    let mut min = [f32::MAX; 3];
+    let mut max = [f32::MIN; 3];
+    for s in splats {
+      for i in 0..3 {
+        min[i] = min[i].min(s.position[i]);
+        max[i] = max[i].max(s.position[i]);
+      }
+    }
+    fn spread(x: u32) -> u64 {
+      // spread 10 bits so there are two zero bits between each
+      let mut x = x as u64 & 0x3FF;
+      x = (x | (x << 16)) & 0x030000FF;
+      x = (x | (x << 8)) & 0x0300F00F;
+      x = (x | (x << 4)) & 0x030C30C3;
+      x = (x | (x << 2)) & 0x09249249;
+      x
+    }
+    let code = |s: &GaussianSplat| -> u64 {
+      let mut c = [0u32; 3];
+      for i in 0..3 {
+        let r = max[i] - min[i];
+        let n = if r > 0.0 { (s.position[i] - min[i]) / r } else { 0.0 };
+        c[i] = (n.clamp(0.0, 1.0) * 1023.0) as u32;
+      }
+      spread(c[0]) | (spread(c[1]) << 1) | (spread(c[2]) << 2)
+    };
+    let mut v: Vec<(u64, &GaussianSplat)> = splats.iter().map(|s| (code(s), s)).collect();
+    v.sort_by_key(|(c, _)| *c);
+    v.into_iter().map(|(_, s)| s).collect()
+  }
+
   // Bounding box for position remains the same.
-  fn calculate_position_bounds(splats: &[GaussianSplat]) -> ([f32; 3], [f32; 3]) {
+  fn calculate_position_bounds(splats: &[&GaussianSplat]) -> ([f32; 3], [f32; 3]) {
     let mut min = [f32::MAX; 3];
     let mut max = [f32::MIN; 3];
     for s in splats {
@@ -180,12 +204,12 @@ impl PlyCompressedExporter {
     (min, max)
   }
 
-  fn calculate_scale_bounds(splats: &[GaussianSplat]) -> ([f32; 3], [f32; 3]) {
+  fn calculate_scale_bounds(splats: &[&GaussianSplat]) -> ([f32; 3], [f32; 3]) {
     let mut min = [f32::MAX; 3];
     let mut max = [f32::MIN; 3];
     for s in splats {
       for i in 0..3 {
-        let scale = s.scale[i].exp();
+        let scale = s.scale[i].clamp(-20.0, 20.0);
         min[i] = min[i].min(scale);
         max[i] = max[i].max(scale);
       }
@@ -193,7 +217,7 @@ impl PlyCompressedExporter {
     (min, max)
   }
 
-  fn calculate_color_bounds(splats: &[GaussianSplat]) -> ([f32; 3], [f32; 3]) {
+  fn calculate_color_bounds(splats: &[&GaussianSplat]) -> ([f32; 3], [f32; 3]) {
     const SH_C0: f32 = 0.28209479177387814;
     let mut min = [f32::MAX; 3];
     let mut max = [f32::MIN; 3];
@@ -232,51 +256,49 @@ impl PlyCompressedExporter {
       let max_quant_val = ((1 << bits) - 1) as f32;
       (norm * max_quant_val).round().clamp(0.0, max_quant_val) as u32
     };
-    let isx = quantize(log_scale[0].exp(), min[0], max[0], 11);
-    let isy = quantize(log_scale[1].exp(), min[1], max[1], 10);
-    let isz = quantize(log_scale[2].exp(), min[2], max[2], 11);
+    let isx = quantize(log_scale[0].clamp(-20.0, 20.0), min[0], max[0], 11);
+    let isy = quantize(log_scale[1].clamp(-20.0, 20.0), min[1], max[1], 10);
+    let isz = quantize(log_scale[2].clamp(-20.0, 20.0), min[2], max[2], 11);
     // Pack with x in the most significant 11 bits, y in the middle 10 bits, z in the least 11 bits.
     (isx << 21) | (isy << 11) | isz
   }
 
+  /// Rotation is (w, x, y, z). Largest-component packing: the largest component's index
+  /// (in w,x,y,z order) goes in the top 2 bits, the remaining three (in index order, first one
+  /// in the most significant position) are stored as 10-bit values mapped from
+  /// [-1/sqrt(2), 1/sqrt(2)]. The quaternion is negated so the omitted component is positive.
   fn quantize_pack_rotation(rot: &[f32; 4]) -> u32 {
-    // Largest-component quaternion compression (2 + 10 + 10 + 10 bits):
-    // 1) Normalize quaternion.
-    // 2) Identify index of the component with largest absolute value (stored in top 2 bits).
-    // 3) For the remaining three components, map from [-1/sqrt(2), +1/sqrt(2)] to [0, 1023]
-    //    and store as 10-bit integers.
-    let mut norm_rot = *rot;
-    let len =
-      (norm_rot[0].powi(2) + norm_rot[1].powi(2) + norm_rot[2].powi(2) + norm_rot[3].powi(2))
-        .sqrt();
+    let mut q = *rot;
+    let len = q.iter().map(|v| v * v).sum::<f32>().sqrt();
     if len > 1e-8 {
-      for v in &mut norm_rot {
+      for v in &mut q {
         *v /= len;
       }
+    } else {
+      q = [1.0, 0.0, 0.0, 0.0];
     }
 
-    let mut max_val = 0.0;
-    let mut max_idx = 0;
-    for (i, &val) in norm_rot.iter().enumerate() {
-      if val.abs() > max_val {
-        max_val = val.abs();
-        max_idx = i;
+    let mut largest = 0;
+    for i in 1..4 {
+      if q[i].abs() > q[largest].abs() {
+        largest = i;
+      }
+    }
+    if q[largest] < 0.0 {
+      for v in &mut q {
+        *v = -*v;
       }
     }
 
-    let mut components = [0u32; 3];
-    let mut component_idx = 0;
-    for (i, &val) in norm_rot.iter().enumerate() {
-      if i != max_idx {
-        const NORM_FACTOR: f32 = 0.70710678118; // 1 / sqrt(2)
-        let normalized = (val / NORM_FACTOR + 1.0) / 2.0;
-        let quantized = (normalized * 1023.0).round().clamp(0.0, 1023.0);
-        components[component_idx] = quantized as u32;
-        component_idx += 1;
+    let sqrt2 = std::f32::consts::SQRT_2;
+    let mut result = largest as u32;
+    for (i, &v) in q.iter().enumerate() {
+      if i != largest {
+        let n = (v * sqrt2 * 0.5 + 0.5).clamp(0.0, 1.0);
+        result = (result << 10) | (n * 1023.0).round() as u32;
       }
     }
-
-    (max_idx as u32) << 30 | components[2] << 20 | components[1] << 10 | components[0]
+    result
   }
 
   fn pack_color_opacity(splat: &GaussianSplat, min: &[f32; 3], max: &[f32; 3]) -> u32 {

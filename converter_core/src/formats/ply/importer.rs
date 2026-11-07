@@ -10,6 +10,15 @@ use super::helpers::{
 
 pub struct PlyImporter;
 
+/// Unpacks an 11-10-11 bit value (x in MSB) into normalized [0,1] floats.
+fn unpack_111011(v: u32) -> (f32, f32, f32) {
+  (
+    ((v >> 21) & 0x7FF) as f32 / 2047.0,
+    ((v >> 11) & 0x3FF) as f32 / 1023.0,
+    (v & 0x7FF) as f32 / 2047.0,
+  )
+}
+
 impl Importer for PlyImporter {
   fn import(reader: &mut impl std::io::Read) -> Result<Scene, ConversionError> {
     let parser = Parser::<ply::DefaultElement>::new();
@@ -119,9 +128,7 @@ impl PlyImporter {
     let vertices = payload
       .get("vertex")
       .ok_or_else(|| parse_error("Missing 'vertex' element"))?;
-    let sh_data = payload
-      .get("sh")
-      .ok_or_else(|| parse_error("Missing 'sh' element"))?;
+    let sh_data = payload.get("sh");
 
     let mut splats = Vec::with_capacity(vertices.len());
 
@@ -132,99 +139,65 @@ impl PlyImporter {
       }
       let chunk = &chunks[chunk_index];
 
-      // --- Dequantize Position --- (No change)
-      let packed_position = property_to_u32(&vert["packed_position"]);
-      let ix = packed_position & 0x3FF;
-      let iy = (packed_position >> 10) & 0x7FF;
-      let iz = (packed_position >> 21) & 0x7FF;
-      let min_x = property_to_f32(&chunk["min_x"]);
-      let max_x = property_to_f32(&chunk["max_x"]);
-      let min_y = property_to_f32(&chunk["min_y"]);
-      let max_y = property_to_f32(&chunk["max_y"]);
-      let min_z = property_to_f32(&chunk["min_z"]);
-      let max_z = property_to_f32(&chunk["max_z"]);
+      let f = |c: &ply::DefaultElement, k: &str| property_to_f32(&c[k]);
+      let lerp = |a: f32, b: f32, t: f32| a + (b - a) * t;
+
+      // --- Position: x=11 (MSB), y=10, z=11 (LSB) ---
+      let p = property_to_u32(&vert["packed_position"]);
+      let (nx, ny, nz) = unpack_111011(p);
       let position = [
-        min_x + (ix as f32 / 1023.0) * (max_x - min_x),
-        min_y + (iy as f32 / 2047.0) * (max_y - min_y),
-        min_z + (iz as f32 / 2047.0) * (max_z - min_z),
+        lerp(f(chunk, "min_x"), f(chunk, "max_x"), nx),
+        lerp(f(chunk, "min_y"), f(chunk, "max_y"), ny),
+        lerp(f(chunk, "min_z"), f(chunk, "max_z"), nz),
       ];
 
-      // --- Dequantize Scale ---
-      let packed_scale = property_to_u32(&vert["packed_scale"]);
-      let isx = packed_scale & 0x3FF;
-      let isy = (packed_scale >> 10) & 0x7FF;
-      let isz = (packed_scale >> 21) & 0x7FF;
-      let min_scale_x = property_to_f32(&chunk["min_scale_x"]);
-      let max_scale_x = property_to_f32(&chunk["max_scale_x"]);
-      let min_scale_y = property_to_f32(&chunk["min_scale_y"]);
-      let max_scale_y = property_to_f32(&chunk["max_scale_y"]);
-      let min_scale_z = property_to_f32(&chunk["min_scale_z"]);
-      let max_scale_z = property_to_f32(&chunk["max_scale_z"]);
-
-      // Dequantize to linear scale
-      let linear_scale_x = min_scale_x + (isx as f32 / 1023.0) * (max_scale_x - min_scale_x);
-      let linear_scale_y = min_scale_y + (isy as f32 / 2047.0) * (max_scale_y - min_scale_y);
-      let linear_scale_z = min_scale_z + (isz as f32 / 2047.0) * (max_scale_z - min_scale_z);
-
-      // Convert to log scale for the struct, clamping to prevent ln(0) or ln(<0)
+      // --- Scale: chunk bounds are in log space, same layout as position ---
+      let p = property_to_u32(&vert["packed_scale"]);
+      let (sx, sy, sz) = unpack_111011(p);
       let scale = [
-        linear_scale_x.max(1e-8).ln(),
-        linear_scale_y.max(1e-8).ln(),
-        linear_scale_z.max(1e-8).ln(),
+        lerp(f(chunk, "min_scale_x"), f(chunk, "max_scale_x"), sx),
+        lerp(f(chunk, "min_scale_y"), f(chunk, "max_scale_y"), sy),
+        lerp(f(chunk, "min_scale_z"), f(chunk, "max_scale_z"), sz),
       ];
 
-      // --- Dequantize Color (DC) and Opacity ---
+      // --- Color (R:G:B:A, R in MSB). RGB = f_dc * SH_C0 + 0.5, A = sigmoid(opacity) ---
+      const SH_C0: f32 = 0.28209479177387814;
       let packed_color = property_to_u32(&vert["packed_color"]);
-      let r_u8 = (packed_color & 0xFF) as u8;
-      let g_u8 = ((packed_color >> 8) & 0xFF) as u8;
-      let b_u8 = ((packed_color >> 16) & 0xFF) as u8;
-      let a_u8 = ((packed_color >> 24) & 0xFF) as u8;
-      let min_r = property_to_f32(&chunk["min_r"]);
-      let max_r = property_to_f32(&chunk["max_r"]);
-      let min_g = property_to_f32(&chunk["min_g"]);
-      let max_g = property_to_f32(&chunk["max_g"]);
-      let min_b = property_to_f32(&chunk["min_b"]);
-      let max_b = property_to_f32(&chunk["max_b"]);
+      let r = ((packed_color >> 24) & 0xFF) as f32 / 255.0;
+      let g = ((packed_color >> 16) & 0xFF) as f32 / 255.0;
+      let b = ((packed_color >> 8) & 0xFF) as f32 / 255.0;
+      let a = (packed_color & 0xFF) as f32 / 255.0;
       let spherical_harmonics_dc = [
-        min_r + (r_u8 as f32 / 255.0) * (max_r - min_r),
-        min_g + (g_u8 as f32 / 255.0) * (max_g - min_g),
-        min_b + (b_u8 as f32 / 255.0) * (max_b - min_b),
+        (lerp(f(chunk, "min_r"), f(chunk, "max_r"), r) - 0.5) / SH_C0,
+        (lerp(f(chunk, "min_g"), f(chunk, "max_g"), g) - 0.5) / SH_C0,
+        (lerp(f(chunk, "min_b"), f(chunk, "max_b"), b) - 0.5) / SH_C0,
       ];
-      let normalized_opacity = (a_u8 as f32 / 255.0).clamp(1e-6, 1.0 - 1e-6);
-      let opacity = (normalized_opacity / (1.0 - normalized_opacity)).ln();
+      let a = a.clamp(1.0 / 255.0 * 0.5, 1.0 - 1.0 / 255.0 * 0.5);
+      let opacity = (a / (1.0 - a)).ln();
 
-      // --- Dequantize Rotation ---
+      // --- Rotation: 2-bit largest index, then three 10-bit values (w,x,y,z order) ---
       let packed_rotation = property_to_u32(&vert["packed_rotation"]);
-      let rx_u8 = (packed_rotation & 0xFF) as u8;
-      let ry_u8 = ((packed_rotation >> 8) & 0xFF) as u8;
-      let rz_u8 = ((packed_rotation >> 16) & 0xFF) as u8;
-      let rw_u8 = ((packed_rotation >> 24) & 0xFF) as u8;
-      let mut rot_f32 = [
-        (rx_u8 as f32 / 255.0) * 2.0 - 1.0,
-        (ry_u8 as f32 / 255.0) * 2.0 - 1.0,
-        (rz_u8 as f32 / 255.0) * 2.0 - 1.0,
-        (rw_u8 as f32 / 255.0) * 2.0 - 1.0,
-      ];
-      let len =
-        (rot_f32[0].powi(2) + rot_f32[1].powi(2) + rot_f32[2].powi(2) + rot_f32[3].powi(2)).sqrt();
-      if len > 0.0 {
-        for v in &mut rot_f32 {
-          *v /= len;
-        }
-      }
-      let rotation = [rot_f32[3], rot_f32[0], rot_f32[1], rot_f32[2]];
+      let sqrt2 = std::f32::consts::SQRT_2;
+      let comp = |shift: u32| (((packed_rotation >> shift) & 1023) as f32 / 1023.0 - 0.5) * sqrt2;
+      let (ca, cb, cc) = (comp(20), comp(10), comp(0));
+      let m = (1.0 - (ca * ca + cb * cb + cc * cc)).max(0.0).sqrt();
+      let rotation = match packed_rotation >> 30 {
+        0 => [m, ca, cb, cc],
+        1 => [ca, m, cb, cc],
+        2 => [ca, cb, m, cc],
+        _ => [ca, cb, cc, m],
+      };
 
-      // --- Dequantize Spherical Harmonics (Rest) ---
-      let sh_element = &sh_data[i];
-      let mut spherical_harmonics_rest = Vec::with_capacity(45);
-      for j in 0..45 {
-        let key = format!("f_rest_{}", j);
-        let sh_u8 = property_to_u8(&sh_element[&key]);
-        // Inverse of the new exporter formula: (nvalue * 256).floor()
-        // We approximate the inverse by dividing by 256.
-        let nvalue = sh_u8 as f32 / 256.0;
-        let sh_f32 = (nvalue - 0.5) * 8.0;
-        spherical_harmonics_rest.push(sh_f32);
+      // --- Spherical harmonics (rest), optional ---
+      let mut spherical_harmonics_rest = vec![0.0f32; 45];
+      if let Some(sh_data) = sh_data {
+        let sh_element = &sh_data[i];
+        for (j, out) in spherical_harmonics_rest.iter_mut().enumerate() {
+          if let Some(prop) = sh_element.get(&format!("f_rest_{}", j)) {
+            let sh_u8 = property_to_u8(prop);
+            *out = ((sh_u8 as f32 + 0.5) / 256.0 - 0.5) * 8.0;
+          }
+        }
       }
 
       splats.push(GaussianSplat {

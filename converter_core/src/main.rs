@@ -148,6 +148,25 @@ fn convert_splat_to_compressed_ply() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 #[test]
+fn convert_spz_to_compressed_ply() -> Result<(), Box<dyn std::error::Error>> {
+  const FILENAME: &str = "hornedlizard";
+
+  let file = File::open(format!("./test_data/{}.spz", FILENAME))?;
+  let mut reader = BufReader::new(file);
+
+  let scene = SpzImporter::import(&mut reader)?;
+
+  let file: File = File::create(format!("./test_data/{}_converted.compressed.ply", FILENAME))?;
+  let mut writer = BufWriter::new(file);
+
+  let _ = PlyCompressedExporter::export(&scene, &mut writer);
+
+  println!("Converted scene {}.splat", FILENAME);
+
+  Ok(())
+}
+
+#[test]
 fn convert_csv_to_ply() -> Result<(), Box<dyn std::error::Error>> {
   const FILENAME: &str = "baby_yoda";
 
