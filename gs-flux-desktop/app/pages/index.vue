@@ -23,6 +23,7 @@ interface ConversionResult {
 
 const supportedFormats = {
   binary_ply: "Binary PLY",
+  compressed_ply: "Compressed PLY",
   ascii_ply: "ASCII PLY",
   spz_v2: "SPZ (v2)",
   splat: "SPLAT",
@@ -110,6 +111,7 @@ function updateOutputFileName() {
     {
       splat: "splat",
       ascii_ply: "ply",
+      compressed_ply: "compressed.ply",
       binary_ply: "ply",
       spz_v2: "spz",
       csv: "csv",
@@ -187,7 +189,7 @@ function clearAll() {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-background to-muted/20 p-6">
+  <div class="min-h-screen bg-linear-to from-background to-muted/20 p-6">
     <div class="max-w-4xl mx-auto">
       <!-- Header -->
       <div class="text-center mb-8">

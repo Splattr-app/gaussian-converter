@@ -1,7 +1,7 @@
 use converter_core::{
   formats::{
     csv::{CsvExporter, CsvImporter},
-    ply::{PlyASCIIExporter, PlyBinaryExporter, PlyImporter},
+    ply::{PlyASCIIExporter, PlyBinaryExporter, PlyCompressedExporter, PlyImporter},
     splat::{SplatExporter, SplatImporter},
     spz::{SpzImporter, SpzV2Exporter},
   },
@@ -55,6 +55,7 @@ async fn convert_to_temp_file(
   match target_format {
     "ascii_ply" => PlyASCIIExporter::export(&scene, &mut writer),
     "binary_ply" => PlyBinaryExporter::export(&scene, &mut writer),
+    "compressed_ply" => PlyCompressedExporter::export(&scene, &mut writer),
     "spz_v2" => SpzV2Exporter::export(&scene, &mut writer),
     "csv" => CsvExporter::export(&scene, &mut writer),
     "splat" => SplatExporter::export(&scene, &mut writer),

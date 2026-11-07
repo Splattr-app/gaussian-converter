@@ -25,6 +25,17 @@ export default defineNuxtConfig({
       // Tauri requires a consistent port
       strictPort: true,
     },
+    optimizeDeps: {
+      include: [
+        '@tauri-apps/plugin-dialog',
+        '@vueuse/core',
+        'class-variance-authority',
+        'clsx',
+        'lucide-vue-next',
+        'reka-ui',
+        'tailwind-merge',
+      ]
+    }
   },
   // Avoids error [unhandledRejection] EMFILE: too many open files, watch
   ignore: ["**/src-tauri/**"],
