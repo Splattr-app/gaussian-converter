@@ -102,6 +102,7 @@ worker.onmessage = (e) => {
       "splat": "splat",
       "ascii_ply": "ply",
       "binary_ply": "ply",
+      "compressed_ply": "compressed.ply",
       "spz_v2": "spz",
       "csv": "csv"
     }
